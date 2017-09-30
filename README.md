@@ -1,5 +1,5 @@
-# Copy File From Camera
-
+# CamCopyBot
+> Automatique extract video from cam using python on a raspberry
 
 
 # Raspberry SETUP
