@@ -11,7 +11,7 @@ class MyHandler(FileSystemEventHandler):
 class CamCopyBot():
 	def __init__(self):
 		version = "0.0.1"
-		self.path  = "/mnt/usbstorage/"
+		self.path  = "/mnt/usbstorage/DCIM/100MEDIA"
 		print("CamCopyBot : "+version)
 
 		self.event_handler = MyHandler()
