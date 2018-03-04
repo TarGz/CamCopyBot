@@ -6,84 +6,88 @@ import time
 import glob
 import os.path
 import paramiko
+import pysftp
 import sys
 from pprint import pprint
+from pushover import Client
 
 
 class CamCopyBot():
 	def __init__(self):
-		version = "0.0.1"
+		version = "0.0.2"
 		self.path  = "/mnt/usbstorage/DCIM/100MEDIA/"
 		print("CamCopyBot : "+version)
 
-		self.host = "192.168.0.39"                    #hard-coded
+		self.host = "192.168.0.39"
 		self.port = 22
-		self.transport = paramiko.Transport((host, port))
-		self.password = "julienterraz"                #hard-coded
-		self.username = "Ticita71$01"                #hard-coded
-		self.transport.connect(username = username, password = password)
-
-				
-
-
-
-		# self.dbx = dropbox.Dropbox('X-ZcIun6I8QAAAAAAAUhbEdNuWv-pVIko6L2wSsx6fd_yDRSmThQ-xpofCPVBVdT')
-		# self.dbx.users_get_current_account()
-		# print("?")
-		# pprint(self.dbx)
-		# for entry in self.dbx.files_list_folder('Applications').entries:
-  #  			print("entry:"+entry.name)
-						# finename = os.path.basename(vid)
-				# spinner = Spinner('Desrushing '+finename)
-				# spinner.next()
-
-		self.connectDropBox()
+		self.failetimeout = 10;
+		self.username = "julienterraz"
+		self.password = "Ticita71$01"
+		self.poUSER_KEY = "INuXp5HFfmWVCICoRrhLlLmCRoyvJx"
+		self.poTOKEN = "aw6mfguztvs6irod2k2o8yxqpuwkjx"
+		self.po = Client(self.poUSER_KEY, api_token=self.poTOKEN)
+		# _self.po.send_message("upload done for the file " , title="Upload done:",sound="bike")
+		
 		self.checkForVideoInPath()
 
-	def connectDropBox(_self):
-		print("Conencting to DropBox")
-		_self.dbx = dropbox.Dropbox('X-ZcIun6I8QAAAAAAAUhbEdNuWv-pVIko6L2wSsx6fd_yDRSmThQ-xpofCPVBVdT')
-		print ("linked account: ", _self.dbx)
-		pprint (_self.dbx)
-		for entry in _self.dbx.files_list_folder('/Applications/CamCopyBot').entries:
-  			print("entry:"+entry.name)
-
-	def copyVideos(_self,source):
+	def uploadVideo(_self,source):
 
 		dest = os.path.basename(source)
-		print("dest:"+dest)
+		print("source:"+source+"\n")
+		print("dest:"+dest+"\n")
 
-		#dbx.files_upload("Potential headline: Game 5 a nail-biter as Warriors inch out Cavs", '/cavs vs warriors/game 5/story.txt')
+		spinner = Spinner("copying file: "+source+"\n")
 
-		spinner = Spinner("copying file"+source)
-		# while True:
-		# 	spinner.next()
-			# _self.dbx.files_upload(source,'/Applications/CamCopyBot'+source)
-		with open(source, "rb") as f:
-			spinner.next()
-			_self.dbx.files_upload(f.read(), '/Applications/CamCopyBot'+dest, mute = False)
+		
+
+		try:
+			transport = paramiko.Transport((_self.host, _self.port))
+			transport.connect(username = _self.username, password = _self.password)
+			sftp = paramiko.SFTPClient.from_transport(transport)
+			path = '/Users/julienterraz/Documents/_TarGz/DERUSH/TODO/' + dest 
+			localpath = source
+			sftp.put(localpath, path)
+			sftp.close()
+			transport.close()
+			print ("upload done: "+path+"\n")
+
+			print ("removing source : "+source+"\n")
+			
+
+			os.remove(source)
+
+			filename, file_extension = os.path.splitext(source)
+			print ("file_extension: " + file_extension + "\n")
+
+			if(file_extension == ".MP4"):
+				_self.po.send_message("upload done for the file " + dest, title="Upload done:"+dest,sound="bike")
+
+			# thmfile = source
+			# thmfile.replace("MP4","THM")
+
+			# print ("removing thmfile : "+thmfile+"\n")
+			# os.remove(thmfile)
+			
+		except:
+			e = sys.exc_info()[0]
+			print ("unable to upload: "+source+"\n")
+			print(e)
+			print ("waiting: "+str(_self.failetimeout)+" seconds\n")
 
 
-
-	def checkForVideoInPath(self):	
+	def checkForVideoInPath(self):
 		spinner = Spinner('Waiting camera... ')
 		while True:
-			self.MP4 = glob.glob(self.path+"*.MP4")
+			self.MP4 = glob.glob(self.path+"*.*")
 			spinner.next()
 			time.sleep(1)
 
 			if(len(self.MP4) > 0):
 				
 				for entry in self.MP4:
-					spinner = Spinner('found file'+entry)
-					spinner.next()
-					self.copyVideos(entry)
+					print('found file'+entry+"\n")
+					self.uploadVideo(entry)
 				# break
-
-				
-
-			
-
 
 
 
