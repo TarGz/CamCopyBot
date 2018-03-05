@@ -9,13 +9,14 @@ import paramiko
 import pysftp
 import sys
 from pprint import pprint
-from pushover import Client
+# from pushover import Client
 
 
 class CamCopyBot():
 	def __init__(self):
 		version = "0.0.3"
-		self.path  = "/mnt/usbstorage/DCIM/100MEDIA/"
+		self.path  = "/mnt/usbstorage/DCIM/100MEDIA/" # PROD
+		# self.path  = "/Volumes/CNTR_ROAM3/DCIM/" 	# DEV
 		print("CamCopyBot : "+version)
 
 		self.host = "192.168.0.39"
@@ -25,10 +26,41 @@ class CamCopyBot():
 		self.password = "Ticita71$01"
 		self.poUSER_KEY = "INuXp5HFfmWVCICoRrhLlLmCRoyvJx"
 		self.poTOKEN = "aw6mfguztvs6irod2k2o8yxqpuwkjx"
-		self.po = Client(self.poUSER_KEY, api_token=self.poTOKEN)
+		# self.po = Client(self.poUSER_KEY, api_token=self.poTOKEN)
 		# _self.po.send_message("upload done for the file " , title="Upload done:",sound="bike")
 		
 		self.checkForVideoInPath()
+
+
+
+	def viewBar(_self,a,b):
+	    # original version
+	    res = a/int(b)*100
+	    sys.stdout.write('\rComplete precent: %.2f %%' % (res))
+	    sys.stdout.flush()
+
+	def tqdmWrapViewBar(_self,*args, **kwargs):
+	    try:
+	        from tqdm import tqdm
+	    except ImportError:
+	        # tqdm not installed - construct and return dummy/basic versions
+	        class Foo():
+	            @classmethod
+	            def close(*c):
+	                pass
+	        return viewBar, Foo
+	    else:
+	        pbar = tqdm(*args, **kwargs)  # make a progressbar
+	        last = [0]  # last known iteration, start at 0
+	        def viewBar2(a, b):
+	            pbar.total = int(b)
+	            pbar.update(int(a - last[0]))  # update pbar with increment
+	            last[0] = a  # update last known iteration
+	        return viewBar2, pbar  # return callback, tqdmInstance
+
+
+
+
 
 	def uploadVideo(_self,source):
 
@@ -46,9 +78,11 @@ class CamCopyBot():
 			sftp = paramiko.SFTPClient.from_transport(transport)
 			path = '/Users/julienterraz/Documents/_TarGz/DERUSH/TODO/' + dest 
 			localpath = source
-			sftp.put(localpath, path)
+			cbk, pbar = _self.tqdmWrapViewBar(ascii=True, unit='b', unit_scale=True)
+			sftp.put(localpath, path,callback=cbk)
 			sftp.close()
 			transport.close()
+			pbar.close()
 			print ("upload done: "+path+"\n")
 
 			print ("removing source : "+source+"\n")
@@ -63,7 +97,7 @@ class CamCopyBot():
 				_self.po.send_message("upload done for the file " + dest, title="Upload done:"+dest,sound="bike")
 			
 		except:
-			e = sys.exc_info()[0]
+			e = sys.exc_info()
 			print ("unable to upload: "+source+"\n")
 			print(e)
 			print ("waiting: "+str(_self.failetimeout)+" seconds\n")
