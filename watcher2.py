@@ -9,7 +9,7 @@ import paramiko
 import pysftp
 import sys
 from pprint import pprint
-# from pushover import Client
+from pushover import Client
 
 
 class CamCopyBot():
@@ -26,7 +26,7 @@ class CamCopyBot():
 		self.password = "Ticita71$01"
 		self.poUSER_KEY = "INuXp5HFfmWVCICoRrhLlLmCRoyvJx"
 		self.poTOKEN = "aw6mfguztvs6irod2k2o8yxqpuwkjx"
-		# self.po = Client(self.poUSER_KEY, api_token=self.poTOKEN)
+		self.po = Client(self.poUSER_KEY, api_token=self.poTOKEN)
 		# _self.po.send_message("upload done for the file " , title="Upload done:",sound="bike")
 		
 		self.checkForVideoInPath()
